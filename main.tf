@@ -4,6 +4,7 @@ provider "aws" {
   secret_key = var.aws_secret_key
 }
 
+#Create Key Pair
 resource "aws_key_pair" "key" {
   key_name   = "MyKeyPair"
   public_key = file(var.public_key)
@@ -26,7 +27,7 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
-resource "aws_instance" "rundeck" {
+resource "aws_instance" "rundeck_dev" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   key_name = aws_key_pair.key.key_name
@@ -44,7 +45,7 @@ resource "aws_instance" "rundeck" {
   provisioner "remote-exec" {
       inline = ["echo ssh OK", ]
        connection {
-         host = aws_instance.rundesk_test.public_ip
+         host = aws_instance.rundeck_dev.public_ip
     private_key = file(var.private_key)
     user        = var.ansible_user
   }
@@ -52,13 +53,13 @@ resource "aws_instance" "rundeck" {
 
   # This is where we configure the instance with ansible-playbook
   # Rundeck requires Java to be installed 
-  # $1 - ${aws_instance.rundesk_test.public_ip} / $2 - ${var.ansible_user} / $3 - ${var.private_key}
+  # $1 - ${aws_instance.rundeck_dev.public_ip} / $2 - ${var.ansible_user} / $3 - ${var.private_key}
   provisioner "local-exec" {
-	  command = "chmod +x ./install_java.sh && ./install_java.sh ${aws_instance.rundesk_test.public_ip} ${var.ansible_user} ${var.private_key}"
+	  command = "chmod +x ./install_rundeck.sh && bash ./install_rundeck.sh ${aws_instance.rundeck_dev.public_ip} ${var.ansible_user} ${var.private_key}"
   }
 
     tags = {
-    Name = "rundesk_test"
+    Name = "rundeck_dev"
   }
 }
 

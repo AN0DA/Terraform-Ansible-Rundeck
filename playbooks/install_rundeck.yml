@@ -1,0 +1,101 @@
+---
+- name: Install Java Development Kit
+  hosts: rundeck
+  become: true
+  
+  tasks:
+    - name: Install OpenJDK
+      become: yes
+      apt: 
+        update_cache: yes
+        name: openjdk-8-jdk-headless
+        state: latest
+
+    - name: Update cache and ignore errors in case of problems
+      become: yes
+      apt: update_cache=yes
+      ignore_errors: yes
+      
+
+
+- name: Install Rundeck
+  hosts: rundeck
+  become: true
+
+  tasks:
+  - name: Download Rundeck .deb
+    get_url:
+      url: https://dl.bintray.com/rundeck/rundeck-deb/rundeck_3.2.8.20200608-1_all.deb
+      dest: /tmp/rundeck.deb
+
+  - name: Install Rundeck (dpkg)
+    apt: deb="/tmp/rundeck.deb"
+    become: yes
+
+  - name: Start rundeckd service
+    service:
+      name: rundeckd
+      state: started
+  
+  - name: Config '/etc/rundeck/framework.properties' - Set server name
+    become: yes
+    lineinfile:
+      path: /etc/rundeck/framework.properties
+      regexp: '^framework.server.name = localhost'
+      line: 'framework.server.name = http://rundeck.nordcloud.local'
+
+  - name: Config '/etc/rundeck/framework.properties' - Set server hostname
+    become: yes
+    lineinfile:
+      path: /etc/rundeck/framework.properties
+      regexp: '^framework.server.hostname = localhost'
+      line: 'framework.server.hostname = http://rundeck.nordcloud.local'
+
+  - name: Config '/etc/rundeck/framework.properties' - Set server url
+    become: yes
+    lineinfile:
+      path: /etc/rundeck/framework.properties
+      regexp: '^framework.server.url = http://localhost:4440'
+      line: 'framework.server.url = http://rundeck.nordcloud.local'
+
+  - name: Config '/etc/rundeck/rundeck-config.properties' - Set server uri redirection
+    become: yes
+    lineinfile:
+      path: /etc/rundeck/rundeck-config.properties
+      regexp: '^grails.serverURL=http://localhost:4440'
+      line: 'grails.serverURL=http://{{ ansible_public_ip }}'   
+
+  - name: Restart rundeckd service
+    service:
+      name: rundeckd
+      state: restarted
+      
+
+- name: Install Nginx proxy server
+  hosts: rundeck
+  become: true
+
+  tasks:
+  - name: Install Nginx
+    become: yes
+    apt: name=nginx state=latest
+
+  - name: Create config file
+    become: yes
+    copy:
+      content: |
+        server {
+          listen 80;
+          listen [::]:80;
+
+          server_name rundeck.nordcloud.local;
+          access_log  /var/log/nginx/rundeck.nordcloud.local.access.log;
+          location / {
+            proxy_pass http://localhost:4440/;
+          }
+        }
+      dest: /etc/nginx/sites-enabled/default
+
+  - name: Restart Nginx
+    become: yes
+    shell: nginx -s reload
