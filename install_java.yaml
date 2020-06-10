@@ -1,0 +1,49 @@
+---
+- name: Install Oracle Java version 14
+  hosts: java
+  become: true
+  
+  tasks:
+  - name: Install dependencies
+    become: yes
+    apt:
+      name: "{{ packages }}"  
+    vars:
+      packages:    
+      - software-properties-common
+      - dirmngr
+      state: latest 
+ 
+  - name: Install add-apt-repostory
+    become: yes
+    apt: name=software-properties-common state=latest
+ 
+  - name: Add Oracle Java Repository
+    become: yes
+    apt_repository: 
+      repo: ppa:linuxuprising/java
+      state: present
+      update_cache: yes
+
+ 
+  - name: Accept Java 14 License
+    become: yes
+    debconf: name='oracle-java14-installer' question='shared/accepted-oracle-license-v1-2' value='true' vtype='select'
+ 
+  - name: update cache and ignore errors in case of problems
+    become: yes
+    apt: update_cache=yes
+    ignore_errors: yes
+ 
+       
+  - name: Install Oracle Java 14
+    become: yes
+    apt:
+      name: "{{ packages }}"  
+    vars:
+      packages:    
+      - ca-certificates
+      - oracle-java14-installer
+      - oracle-java14-set-default
+      state: latest 
+
