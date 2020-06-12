@@ -9,8 +9,9 @@ Script creating AWS VM using Terraform, then installing Rundeck with Ansible
 - [x] Create VM
 - [x] Make ssh connection
 - [x] Install Java (Rundeck dependency)
-- [ ] Install Rundeck
-- [ ] Configure Rundeck
+- [x] Install Rundeck
+- [x] Configure Rundeck
+- [x] Configure proxy server
 
 
 ## Auto variable filling

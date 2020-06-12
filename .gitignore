@@ -1,5 +1,6 @@
 # Ignore local API variables
 *.auto.tfvars
+rundeck.ini
 
 
 # Local .terraform directories
