@@ -2,13 +2,17 @@
 
 ## About
 
-Script creating AWS VM using Terraform, then installing Rundeck with Ansible
+Script creating AWS VM using Terraform, then installing Rundeck with Ansible.
+
+### Result
+
+When accessing the instance's IP address via a web browser Rundeck login screen will load. Default credentials are `user: admin` and `password: admin`
 
 ## Current state
 
 - [x] Create VM
 - [x] Make ssh connection
-- [x] Install Java (Rundeck dependency)
+- [x] Install dependencies
 - [x] Install Rundeck
 - [x] Configure Rundeck
 - [x] Configure proxy server
@@ -16,11 +20,17 @@ Script creating AWS VM using Terraform, then installing Rundeck with Ansible
 
 ## Auto variable filling
 
-Create file `*.auto.tfvars` with pattern:
-> Default values can be seen in [var.tf](var.tf).
+Create `*.auto.tfvars` file with pattern:
+> Default values can be seen in [var.tf](var.tf)
 
-```tf
+```hcl
 aws_region = ""
 aws_access_key = ""
 aws_secret_key = ""
+
+# Path to file is suggested here
+public_key = ""
+private_key = ""
+
+ansible_user = ""
 ```
