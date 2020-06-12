@@ -135,3 +135,7 @@ resource "aws_security_group" "web_server" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+output "instance_public_ip" {
+  value = aws_instance.rundeck_dev.public_ip
+}
