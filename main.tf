@@ -28,6 +28,7 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_instance" "rundeck_dev" {
+  count = 8
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   key_name = aws_key_pair.key.key_name
@@ -43,9 +44,12 @@ resource "aws_instance" "rundeck_dev" {
 
 
   provisioner "remote-exec" {
-      inline = ["echo ssh OK", ]
+      inline = ["echo ssh OK", 
+                "sudo apt update", 
+                "sudo apt install python3 -y",
+              ]
        connection {
-         host = aws_instance.rundeck_dev.public_ip
+         host = aws_instance.rundeck_dev[count.index].public_ip
     private_key = file(var.private_key)
     user        = var.ansible_user
   }
@@ -55,15 +59,170 @@ resource "aws_instance" "rundeck_dev" {
   # Rundeck requires Java to be installed 
   # $1 - ${aws_instance.rundeck_dev.public_ip} / $2 - ${var.ansible_user} / $3 - ${var.private_key}
   provisioner "local-exec" {
-	  command = "chmod +x ./install_rundeck.sh && bash ./install_rundeck.sh ${aws_instance.rundeck_dev.public_ip} ${var.ansible_user} ${var.private_key}"
+	  command = "chmod +x ./install_rundeck.sh && bash ./install_rundeck.sh ${aws_instance.rundeck_dev[count.index].public_ip} ${var.ansible_user} ${var.private_key}"
   }
 
     tags = {
-    Name = "rundeck_dev"
+    Name = "rundeck_dev_${count.index}"
   }
 }
 
+# resource "aws_instance" "rundeck_dev1" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   key_name = aws_key_pair.key.key_name
 
+# # TODO: REMOVE EXCESS OPEN PORTS!!!
+#   vpc_security_group_ids = [
+#     aws_security_group.web.id,
+#     aws_security_group.ssh.id,
+#     aws_security_group.egress-tls.id,
+#     aws_security_group.ping-ICMP.id,
+# 	aws_security_group.web_server.id
+#   ]
+
+
+#   provisioner "remote-exec" {
+#       inline = ["echo ssh OK", 
+#                 "sudo apt update", 
+#                 "sudo apt install python -y",
+#               ]
+#        connection {
+#          host = aws_instance.rundeck_dev.public_ip
+#     private_key = file(var.private_key)
+#     user        = var.ansible_user
+#   }
+#   }
+
+#   # This is where we configure the instance with ansible-playbook
+#   # Rundeck requires Java to be installed 
+#   # $1 - ${aws_instance.rundeck_dev.public_ip} / $2 - ${var.ansible_user} / $3 - ${var.private_key}
+#   provisioner "local-exec" {
+# 	  command = "chmod +x ./install_rundeck.sh && bash ./install_rundeck.sh ${aws_instance.rundeck_dev.public_ip} ${var.ansible_user} ${var.private_key}"
+#   }
+
+#     tags = {
+#     Name = "rundeck_dev1"
+#   }
+# }
+
+# resource "aws_instance" "rundeck_dev2" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   key_name = aws_key_pair.key.key_name
+
+# # TODO: REMOVE EXCESS OPEN PORTS!!!
+#   vpc_security_group_ids = [
+#     aws_security_group.web.id,
+#     aws_security_group.ssh.id,
+#     aws_security_group.egress-tls.id,
+#     aws_security_group.ping-ICMP.id,
+# 	aws_security_group.web_server.id
+#   ]
+
+
+#   provisioner "remote-exec" {
+#       inline = ["echo ssh OK", 
+#                 "sudo apt update", 
+#                 "sudo apt install python -y",
+#               ]
+#        connection {
+#          host = aws_instance.rundeck_dev.public_ip
+#     private_key = file(var.private_key)
+#     user        = var.ansible_user
+#   }
+#   }
+
+#   # This is where we configure the instance with ansible-playbook
+#   # Rundeck requires Java to be installed 
+#   # $1 - ${aws_instance.rundeck_dev.public_ip} / $2 - ${var.ansible_user} / $3 - ${var.private_key}
+#   provisioner "local-exec" {
+# 	  command = "chmod +x ./install_rundeck.sh && bash ./install_rundeck.sh ${aws_instance.rundeck_dev.public_ip} ${var.ansible_user} ${var.private_key}"
+#   }
+
+#     tags = {
+#     Name = "rundeck_dev2"
+#   }
+# }
+
+
+# resource "aws_instance" "rundeck_dev3" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   key_name = aws_key_pair.key.key_name
+
+# # TODO: REMOVE EXCESS OPEN PORTS!!!
+#   vpc_security_group_ids = [
+#     aws_security_group.web.id,
+#     aws_security_group.ssh.id,
+#     aws_security_group.egress-tls.id,
+#     aws_security_group.ping-ICMP.id,
+# 	aws_security_group.web_server.id
+#   ]
+
+
+#   provisioner "remote-exec" {
+#       inline = ["echo ssh OK", 
+#                 "sudo apt update", 
+#                 "sudo apt install python -y",
+#               ]
+#        connection {
+#          host = aws_instance.rundeck_dev.public_ip
+#     private_key = file(var.private_key)
+#     user        = var.ansible_user
+#   }
+#   }
+
+#   # This is where we configure the instance with ansible-playbook
+#   # Rundeck requires Java to be installed 
+#   # $1 - ${aws_instance.rundeck_dev.public_ip} / $2 - ${var.ansible_user} / $3 - ${var.private_key}
+#   provisioner "local-exec" {
+# 	  command = "chmod +x ./install_rundeck.sh && bash ./install_rundeck.sh ${aws_instance.rundeck_dev.public_ip} ${var.ansible_user} ${var.private_key}"
+#   }
+
+#     tags = {
+#     Name = "rundeck_dev3"
+#   }
+# }
+
+# resource "aws_instance" "rundeck_dev4" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   key_name = aws_key_pair.key.key_name
+
+# # TODO: REMOVE EXCESS OPEN PORTS!!!
+#   vpc_security_group_ids = [
+#     aws_security_group.web.id,
+#     aws_security_group.ssh.id,
+#     aws_security_group.egress-tls.id,
+#     aws_security_group.ping-ICMP.id,
+# 	aws_security_group.web_server.id
+#   ]
+
+
+#   provisioner "remote-exec" {
+#       inline = ["echo ssh OK", 
+#                 "sudo apt update", 
+#                 "sudo apt install python -y",
+#               ]
+#        connection {
+#          host = aws_instance.rundeck_dev.public_ip
+#     private_key = file(var.private_key)
+#     user        = var.ansible_user
+#   }
+#   }
+
+#   # This is where we configure the instance with ansible-playbook
+#   # Rundeck requires Java to be installed 
+#   # $1 - ${aws_instance.rundeck_dev.public_ip} / $2 - ${var.ansible_user} / $3 - ${var.private_key}
+#   provisioner "local-exec" {
+# 	  command = "chmod +x ./install_rundeck.sh && bash ./install_rundeck.sh ${aws_instance.rundeck_dev.public_ip} ${var.ansible_user} ${var.private_key}"
+#   }
+
+#     tags = {
+#     Name = "rundeck_dev4"
+#   }
+# }
 
 
 
@@ -137,5 +296,5 @@ resource "aws_security_group" "web_server" {
 }
 
 output "instance_public_ip" {
-  value = aws_instance.rundeck_dev.public_ip
+  value = aws_instance.rundeck_dev[*].public_ip
 }
